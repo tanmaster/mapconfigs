@@ -71,15 +71,22 @@ void ExecuteMapSpecificConfigs(String:cfgSuffix[] = "cfg") {
 	FileType fileType;
 
 	while (dir.GetNext(configFile, sizeof(configFile), fileType)) {
-		if (fileType == FileType_File) {
-			ExplodeString(configFile, ".", explode, 2, sizeof(explode[]), true);
-			if (StrEqual(explode[1], cfgSuffix, false)) {
-				if (strncmp(currentMap, explode[0], strlen(explode[0]), false) == 0) {
-					adt_configs.PushString(configFile);
-				}
-			}
-		}
-	}
+        if (fileType == FileType_File) {
+            // Check if the file ends with the desired suffix (e.g., .pre.cfg or .cfg)
+            char fullSuffix[64];
+            Format(fullSuffix, sizeof(fullSuffix), ".%s", cfgSuffix);
+            
+            int fileLen = strlen(configFile);
+            int suffixLen = strlen(fullSuffix);
+            
+            if (fileLen > suffixLen && StrEqual(configFile[fileLen - suffixLen], fullSuffix, false)) {
+                // Now check if the map name matches the start of the file
+                if (strncmp(currentMap, configFile, strlen(configFile) - suffixLen, false) == 0) {
+                    adt_configs.PushString(configFile);
+                }
+            }
+        }
+    }
 
 	SortADTArray(adt_configs, Sort_Ascending, Sort_String);
 
